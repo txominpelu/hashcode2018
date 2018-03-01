@@ -41,5 +41,12 @@ def print_clusters(clusters):
 if __name__ == "__main__":
     from read_ds import *
     rides = read_ds( 'c_no_hurry.in' )
-    centers, labels = cluster_points(rides, 5)
-    print_clusters(centers)
+    grouped_rides = {} 
+    for r in rides:
+        key = r['early_start']%1
+        if key not in grouped_rides:
+            grouped_rides[key] = []
+        grouped_rides[r['early_start']%3].append(r)
+    for start in grouped_rides:
+        centers, labels = cluster_points(grouped_rides[start], 5)
+        print_clusters(centers)
