@@ -1,22 +1,37 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.cluster import DBSCAN
+from sklearn.cluster import DBSCAN, KMeans
 from sklearn import metrics
 
 def distance(x, y):
     return abs(x[0]-y[0])+abs(x[1]-y[1])
 
-def cluster_points(rides):
-    data = np.array([ [r['start'][0], r['start'][1]] for r in rides ])
-    labels = DBSCAN(eps=0.3, min_samples=10, metric=distance).fit_predict(data)
+def prep_data(rides):
+    return np.array([ [r['start'][0], r['start'][1]] for r in rides ])
+
+def compute_centers(data, labels):
     centers = {}
     for p, l in zip(data, labels):
-        if l not in centers:
-            centers[l] = {'avg':[0, 0], 'cnt':0}
-        centers[l]['avg'] = (centers[l]['avg']+p)/(centers[l]['cnt']+1)
-        centers[l]['cnt'] = centers[l]['cnt']+1
+         if l not in centers:
+             centers[l] = {'avg':[0, 0], 'cnt':0}
+         centers[l]['avg'] = centers[l]['avg']+p
+         centers[l]['cnt'] = centers[l]['cnt']+1
+    for k in centers:
+        centers[k]['avg'] = centers[k]['avg']/centers[l]['cnt']
+    return centers
+
+
+def cluster_points_old(rides):
+    data = prep_data(rides)
+    labels = DBSCAN(eps=0.001, min_samples=10, metric=distance).fit_predict(data)
+    centers = compute_centers(data, labels)
     return centers, labels
 
+def cluster_points(rides, n_clusters):
+    data = prep_data(rides)
+    labels = KMeans(n_clusters=n_clusters).fit_predict(data)
+    centers = compute_centers(data, labels)
+    return centers, labels
 
 def print_clusters(clusters):
     print("number of clusters: "+ str(len(centers)))
@@ -25,6 +40,6 @@ def print_clusters(clusters):
 
 if __name__ == "__main__":
     from read_ds import *
-    rides = read_ds( 'a_example.in' )
-    centers, labels = cluster_points(rides)
+    rides = read_ds( 'c_no_hurry.in' )
+    centers, labels = cluster_points(rides, 5)
     print_clusters(centers)
