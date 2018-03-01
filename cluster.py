@@ -1,19 +1,30 @@
 import matplotlib.pyplot as plt
-import numpy
-import scipy.cluster.hierarchy as hcluster
+import numpy as np
+from sklearn.cluster import DBSCAN
+from sklearn import metrics
 
-# generate 3 clusters of each around 100 points and one orphan point
+def distance(x, y):
+    return abs(x[0]-y[0])+abs(x[1]-y[1])
+
 def cluster_points(rides):
-    data = [ [r['start'][0], r['start'][1]] for r in rides ]
-    
-    # clustering
-    thresh = 1.5
-    clusters = hcluster.fclusterdata(data, thresh, criterion="distance")
-
-    # plotting
-    return clusters
+    data = np.array([ [r['start'][0], r['start'][1]] for r in rides ])
+    labels = DBSCAN(eps=0.3, min_samples=10, metric=distance).fit_predict(data)
+    centers = {}
+    for p, l in zip(data, labels):
+        if l not in centers:
+            centers[l] = {'avg':[0, 0], 'cnt':0}
+        centers[l]['avg'] = (centers[l]['avg']+p)/(centers[l]['cnt']+1)
+        centers[l]['cnt'] = centers[l]['cnt']+1
+    return centers, labels
 
 
 def print_clusters(clusters):
-    title = "number of clusters: %d" % (len(set(clusters)))
-    print(clusters)
+    print("number of clusters: "+ str(len(centers)))
+    print("centers are:")
+    print([x['avg'] for x in clusters.values()])
+
+if __name__ == "__main__":
+    from read_ds import *
+    rides = read_ds( 'a_example.in' )
+    centers, labels = cluster_points(rides)
+    print_clusters(centers)
