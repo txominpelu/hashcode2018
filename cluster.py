@@ -38,6 +38,11 @@ def print_clusters(clusters):
     print("centers are:")
     print([x['avg'] for x in clusters.values()])
 
+def plot_data(data):
+    plt.figure()
+    plt.plot([d[0] for d in data], [d[1] for d in data], 'r')
+    plt.show()
+
 if __name__ == "__main__":
     from read_ds import *
     rides = read_ds( 'c_no_hurry.in' )
